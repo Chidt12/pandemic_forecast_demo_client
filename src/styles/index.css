@@ -1,0 +1,9 @@
+@tailwind components;
+@tailwind utilities;
+@layer utilities {
+    @variants responsive {
+        .none {
+            display: none;
+        }
+    }
+}
