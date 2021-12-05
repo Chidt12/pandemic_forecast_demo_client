@@ -79,6 +79,12 @@ const App = () => {
     console.log(res.data);
   }
 
+  const onClickIncrease = async () => {
+    var res = await Fetch.post("/increase-test", {
+
+    })
+  }
+
   return (
     <div className="App">
       <div className="lg:w-1/2 w-2/3 mx-auto">
@@ -91,6 +97,9 @@ const App = () => {
 
         <div className="mt-5">
           <button className="font-medium text-sm px-5 py-1 rounded bg-primary text-white shadow" onClick={onClick}>UPDATE DATA</button>
+        </div>
+        <div className="mt-5">
+          <button className="font-medium text-sm px-5 py-1 rounded bg-primary text-white shadow" onClick={onClickIncrease}>INCREASE</button>
         </div>
       </div>
     </div>
