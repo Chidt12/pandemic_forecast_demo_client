@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 import Fetch from 'services/Fetch';
 
@@ -6,6 +6,7 @@ import { defaults } from 'react-chartjs-2';
 // Disable animating charts by default.
 defaults.animation = false;
 import { Line } from 'react-chartjs-2';
+import SelectSearch from 'components/SelectSearch';
 
 const options = {
   responsive: true,
@@ -24,6 +25,14 @@ const options = {
 
 const App = () => {
 
+  const [selected_province, setSelectedProvince] = useState("0");
+  const [next_days, setNextDays] = useState(10);
+
+  const provinces = useAsync(async () => {
+    const res = await Fetch.post<{ label: string, value: number }[]>("/get-province", {})
+    return res.data;
+  }, [])
+
   const state = useAsync(async () => {
     const res = await Fetch.post<{
       code: number,
@@ -31,17 +40,18 @@ const App = () => {
         linear_pred_y: number[],
         linear_pred_x: number[],
         train_data_y: number[],
-        train_data_x: number[]
+        train_data_x: number[],
+        dates: string[]
       }
     }>("/get-data", {
-      province_id: 0,
-      next_days_num: 10
+      province_id: selected_province,
+      next_days_num: next_days
     })
 
-    console.log(res.data.data.linear_pred_x);
+    console.log(res.data.data.dates);
 
     return res.data.data;
-  }, [])
+  }, [selected_province, next_days])
 
   const data = useMemo(() => {
     if (state.value) {
@@ -63,8 +73,23 @@ const App = () => {
         },
       ]
 
+      var new_labels: string[] = []
+      var labels = [...state.value.dates]
+
+      var start_date = new Date(labels[0]);
+
+      for (let index = 0; index < labels.length; index++) {
+        var element = labels[index];
+        if(element == "Null"){
+         var new_date = new Date((new Date()).setDate(start_date.getDate() + index))
+          element = `${new_date.getFullYear()}-${new_date.getMonth() < 12 ? new_date.getMonth() + 1 : 1}-${new_date.getDate()}`;
+        }
+        
+        new_labels.push(element)
+      }
+
       return {
-        labels: state.value.linear_pred_y,
+        labels: new_labels,
         datasets: datasets
       }
     }
@@ -85,21 +110,40 @@ const App = () => {
     })
   }
 
-  return (
-    <div className="App">
-      <div className="lg:w-1/2 w-2/3 mx-auto">
-        {
-          data && (
-            //@ts-ignore
-            <Line data={data} options={options} />
-          )
-        }
+  const onClickTest = async () => {
+    var res = await Fetch.post("/realtime-data", {
 
-        <div className="mt-5">
-          <button className="font-medium text-sm px-5 py-1 rounded bg-primary text-white shadow" onClick={onClick}>UPDATE DATA</button>
+    })
+  }
+
+  return (
+    <div className="App mt-10">
+      <div className="flex items-center">
+        <div className="lg:w-1/2 w-1/3 px-10">
+          <div className="">
+            
+            <div className="w-full">
+              {provinces.value && <div>
+                <SelectSearch
+                  data={provinces.value.map((province) => ({ value: province.value.toString(), label: province.label }))}
+                  defaultValue={''}
+                  value={selected_province}
+                  onChangeFunc={(e) => setSelectedProvince(e.value)}
+                />
+              </div>}
+            </div>
+            <div className="w-full mt-5">
+                <input type="number" placeholder="" value={next_days} name="" onChange={(e) => setNextDays(parseInt(e.target.value))} className="w-full outline-none focus:outline-none border border-black border-opacity-20 focus:border-opacity-90 px-4 py-2 rounded text-base" id=""  step={1} min={1}/>
+            </div>
+          </div>
         </div>
-        <div className="mt-5">
-          <button className="font-medium text-sm px-5 py-1 rounded bg-primary text-white shadow" onClick={onClickIncrease}>INCREASE</button>
+        <div className="lg:w-1/2 w-2/3 px-10">
+          {
+            data && (
+              //@ts-ignore
+              <Line data={data} options={options} />
+            )
+          }
         </div>
       </div>
     </div>
