@@ -42,7 +42,9 @@ const App = () => {
 
   const state_2 = useAsync(async () => {
     const res = await Fetch.post<string[]>("/get-dates", {})
-
+    if (res.data) {
+      res.data.reverse();
+    }
     return res.data
   }, [reload])
 
@@ -111,9 +113,14 @@ const App = () => {
 
   const onClick = async () => {
     setOnLoading(true);
-    var res = await Fetch.post("/click-fetch", {
+    try {
+      var res = await Fetch.post("/click-fetch", {
 
-    });
+      });
+    }
+    catch{
+      
+    }
     setOnLoading(false);
     setReload(uuid.v4())
 
