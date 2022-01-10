@@ -74,14 +74,14 @@ const App = () => {
       var datasets = [
         {
           label: 'Real Data',
-          data: state.value.train_data_x.slice(0, state.value.train_data_y.length),
+          data: state.value.train_data_x.map(x => Math.floor(x)).slice(0, state.value.train_data_y.length),
           fill: false,
           backgroundColor: '#c20404',
           borderColor: '#c20404',
         },
         {
           label: 'Predict Data',
-          data: state.value.linear_pred_x,
+          data: state.value.linear_pred_x.map(x => Math.floor(x)),
           fill: false,
           backgroundColor: '#00c742',
           borderColor: '#00c742',
